@@ -3,17 +3,17 @@ jobs:
   build:
     working_directory: ~/aws-thin-dynamo
     docker:
-      - image: circleci/node:6.11
+      - image: nikengp/node
       - image: mongo:3.4.4
     steps:
       - checkout
-      - run:
-          name: update-npm
-          command: 'sudo npm install -g npm@latest'
+      # - run:
+      #     name: update-npm
+      #     command: 'sudo npm install -g npm@latest'
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
-          name: install-npm-wee
+          name: install-npm-deps
           command: npm install
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
