@@ -15,7 +15,7 @@
   "scripts": {
     "style": "standard \"index.js\" \"src/**/*.js\" | snazzy",
     "style:fix": "standard \"index.js\" \"src/**/*.js\" --fix",
-    "test": "npm run style && npm run test:unit:coverage",
+    "test": "npm run style && npm run test:coverage",
     "test:unit": "blue-tape test/**/**.spec.js | tap-spec",
     "test:coverage": "nyc --check-coverage --lines 80 npm run test:unit",
     "report": "nyc report --reporter=html",
@@ -35,13 +35,13 @@
     "blue-tape": "^1.0.0",
     "chokidar-cli": "^1.2.0",
     "co": "^4.6.0",
-    "fuse-box": "^2.1.0",
     "nock": "^9.0.13",
     "nyc": "^11.0.2",
     "pify": "^3.0.0",
     "snazzy": "^7.0.0",
     "standard": "^10.0.2",
     "tap-spec": "^4.1.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "webpack": "^3.2.0"
   }
 }

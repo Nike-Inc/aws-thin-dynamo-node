@@ -1,23 +1,10 @@
-const {FuseBox} = require('fuse-box')
+var path = require('path')
 
-let fuseBox = FuseBox.init({
-  cache: false,
-  homeDir: `../src/`,
-  output: `build/$name.js`,
-  globals: { 'lambda': '*' },
-  package: {
-    name: 's3',
-    main: 's3.js'
+module.exports = {
+  entry: path.resolve(__dirname, '../src/dynamo.js'),
+  output: {
+    filename: 'dynamo.bundle.js',
+    path: path.resolve(__dirname, 'build')
   },
-  natives: {
-    stream: false,
-    process: false,
-    Buffer: false,
-    http: false
-  }
-})
-fuseBox.bundle('dynamo')
-  .instructions(`dynamo.js`)
-  .target('electron')
-
-fuseBox.run()
+  target: 'node'
+}
