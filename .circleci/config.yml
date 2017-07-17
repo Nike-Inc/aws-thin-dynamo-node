@@ -20,7 +20,7 @@ jobs:
           command: npm run test:ci
       - run:
           name: code-coverage
-          command: "mkdir -p reports && xp test-results.xml reports/ava.xml"
+          command: "mkdir -p reports && cp test-results.xml reports/ava.xml"
       - store_artifacts:
           path: coverage
           prefix: coverage
