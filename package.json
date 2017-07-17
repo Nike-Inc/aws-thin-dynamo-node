@@ -19,7 +19,7 @@
     "test:unit": "blue-tape test/**/**.spec.js | tap-spec",
     "test:coverage": "nyc --check-coverage --lines 80 npm run test:unit",
     "report": "nyc report --reporter=html",
-    "report:ci": "nyc report --reporter=cobertura && cp coverage/cobertura-coverage.xml coverage/test-results.xml",
+    "report:ci": "nyc report --reporter=cobertura && mkdir coverage/junit && cp coverage/cobertura-coverage.xml coverage/junit/test-results.xml",
     "report:open": "npm run report && open coverage/index.html",
     "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.spec.js' --polling -c \"./node_modules/.bin/blue-tape test/**/**.spec.js | node_modules/.bin/tap-spec\"",
     "test:int": "blue-tape test/**/**.int.js | tap-spec",
