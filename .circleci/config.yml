@@ -20,9 +20,9 @@ jobs:
           command: npm test
       - run:
           name: code-coverage
-          command: npm run report
+          command: npm run report:ci
       - store_artifacts:
           path: coverage
           prefix: coverage
       - store_test_results:
-          path: coverage/index.html
+          path: coverage
