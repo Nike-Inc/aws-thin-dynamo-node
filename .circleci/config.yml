@@ -3,8 +3,7 @@ jobs:
   build:
     working_directory: ~/aws-thin-dynamo
     docker:
-      - image: nikengp/node
-      - image: mongo:3.4.4
+      - image: nikengp/node:node-6
     steps:
       - checkout
       # - run:
