@@ -15,13 +15,6 @@ let fuseBox = FuseBox.init({
   package: {
     name: 'dynamo',
     main: 'dynamo.js'
-  },
-  ignoreModules: ['util', 'assert', 'url'],
-  natives: {
-    stream: false,
-    process: false,
-    Buffer: false,
-    http: false
   }
 })
 fuseBox.bundle('dynamo')
