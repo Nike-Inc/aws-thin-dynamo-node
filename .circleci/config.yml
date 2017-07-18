@@ -1,7 +1,7 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/aws-thin-dynamo
+    working_directory: ~/app
     docker:
       - image: nikengp/node:node-6
     steps:
