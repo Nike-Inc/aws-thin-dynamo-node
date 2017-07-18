@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/app
     docker:
-      - image: nikengp/node:node-6
+      - image: nikengp/node6:v0.1
     steps:
       - checkout
       - restore_cache:
@@ -17,7 +17,7 @@ jobs:
             - ./node_modules
       - run:
           name: test
-          command: ./.circleci/run-tests.sh
+          command: /build-scripts/lib-run-tests.sh
       - store_artifacts:
           path: coverage
           prefix: coverage
