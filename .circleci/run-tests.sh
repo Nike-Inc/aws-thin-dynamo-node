@@ -11,9 +11,12 @@ mkdir -p test-results
 if [ -e xunit.xml ]; then
   TestSource="xunit.xml"
   TestTarget="ava.xml"
+elif [ -e tap.xml ]; then
+  TestSource="tap.xml"
+  TestTarget="ava.xml"
 elif [ -e junit.xml ]; then
   TestSource="junit.xml"
-  TestTarget="junit/.xml"
+  TestTarget="junit/junit.xml"
   mkdir -p test-results/junit
 else
   echo "No test results found"
