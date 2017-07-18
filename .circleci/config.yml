@@ -21,5 +21,8 @@ jobs:
       - store_artifacts:
           path: coverage
           prefix: coverage
+      - store_artifacts:
+          path: reports
+          prefix: reports
       - store_test_results:
           path: reports
