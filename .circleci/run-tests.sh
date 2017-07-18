@@ -16,7 +16,7 @@ elif [ -e tap.xml ]; then
   TestTarget="ava.xml"
 elif [ -e junit.xml ]; then
   TestSource="junit.xml"
-  TestTarget="junit/junit.xml"
+  TestTarget="test-results.xml"
   mkdir -p test-results/junit
 else
   echo "No test results found"
