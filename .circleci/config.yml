@@ -22,7 +22,7 @@ jobs:
           path: coverage
           prefix: coverage
       - store_artifacts:
-          path: junit
-          prefix: junit
+          path: reports
+          prefix: reports
       - store_test_results:
-          path: junit
+          path: reports

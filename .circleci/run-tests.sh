@@ -5,7 +5,7 @@ set -e
 npm run test:ci
 
 # setup reports directory
-mkdir -p junit
+mkdir -p reports
 
 #copy test output into reports
-cp ./test-results.xml junit/test-results.xml
+cp ./test-results.xml reports/ava.xml
