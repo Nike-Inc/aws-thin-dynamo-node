@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/app
+    docker:
+      - image: nikengp/node:node-6
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install-npm-deps
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: ./.circleci/run-tests.sh
+      - store_artifacts:
+          path: coverage
+          prefix: coverage
+      - store_artifacts:
+          path: test-results
+          prefix: test-results
+      - store_test_results:
+          path: test-results
