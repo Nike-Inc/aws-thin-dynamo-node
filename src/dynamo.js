@@ -23,7 +23,7 @@ function makeClient (options) {
 
   return {
     createSet: createSet.bind(null, context),
-    // query: query.bind(null, context),
+    query: query.bind(null, context),
     scan: scan.bind(null, context),
     get: get.bind(null, context),
     put: put.bind(null, context),
@@ -46,9 +46,9 @@ function dynamoRequest (context, action, params, callback) {
   }))
 }
 
-const queryParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'KeyConditions', 'QueryFilter']
+// const queryParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'KeyConditions', 'QueryFilter']
 function query (context, params, callback) {
-  return dynamoRequest(context, 'Query', context.convert(params, queryParamsToConvert), callback)
+  // return dynamoRequest(context, 'Query', context.convert(params, queryParamsToConvert), callback)
 }
 
 const getParamsToConvert = ['Key']
