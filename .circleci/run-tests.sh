@@ -10,8 +10,7 @@ mkdir -p test-results
 
 if [ -e xunit.xml ]; then
   TestSource="xunit.xml"
-  TestTarget="reports/ava.xml"
-  mkdir -p test-results/reports
+  TestTarget="ava.xml"
 elif [ -e junit.xml ]; then
   TestSource="junit.xml"
   TestTarget="junit/test-results.xml"
