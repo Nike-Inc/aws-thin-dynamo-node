@@ -3,6 +3,7 @@
 # run tests and save as report
 npm run test:ci
 CODE=$?
+echo "Test Exit Code: ${CODE}"
 
 # setup reports directory
 mkdir -p test-results
