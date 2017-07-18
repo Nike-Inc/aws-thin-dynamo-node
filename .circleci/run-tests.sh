@@ -13,7 +13,7 @@ if [ -e xunit.xml ]; then
   TestTarget="ava.xml"
 elif [ -e junit.xml ]; then
   TestSource="junit.xml"
-  TestTarget="junit/test-results.xml"
+  TestTarget="junit/.xml"
   mkdir -p test-results/junit
 else
   echo "No test results found"
