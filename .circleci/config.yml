@@ -16,11 +16,8 @@ jobs:
           paths:
             - ./node_modules
       - run:
-          name: shellcheck
-          command: echo $0 && echo $BASH && ps  -ef | grep $$ | grep -v grep
-      - run:
           name: test
-          command: npm run test:ci
+          command: ./circleci/run-tests.sh
       - store_artifacts:
           path: coverage
           prefix: coverage
