@@ -23,7 +23,7 @@ function makeClient (options) {
 
   return {
     createSet: createSet.bind(null, context),
-    // query: query.bind(null, context),
+    query: query.bind(null, context),
     scan: scan.bind(null, context),
     get: get.bind(null, context),
     put: put.bind(null, context),
