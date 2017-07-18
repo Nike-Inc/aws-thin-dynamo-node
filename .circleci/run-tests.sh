@@ -1,11 +1,22 @@
 #!/bin/bash
-set -e
 
 # run tests and save as report
 npm run test:ci
+CODE=$?
 
 # setup reports directory
-mkdir -p reports
+mkdir -p test-results
 
-#copy test output into reports
-cp ./test-results.xml reports/ava.xml
+if [ -e xunit.xml ]; then
+  TestSource="xunit.xml"
+  TestTarget="ava.xml"
+elif [ -e junit.xml ]; then
+  TestSource="junit.xml"
+  TestTarget="test-results.xml"
+else
+  echo "No test results found"
+  exit 1
+fi
+
+cp ./${TestSource} test-results/${TestTarget}
+exit $CODE

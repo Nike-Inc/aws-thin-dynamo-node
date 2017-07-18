@@ -15,6 +15,9 @@ lib-cov
 coverage
 /reports/
 /junit/
+test-results/
+/xunit.xml
+/junit.xml
 test-results.xml
 
 # nyc test coverage
