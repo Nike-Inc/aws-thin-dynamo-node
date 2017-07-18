@@ -17,7 +17,7 @@ jobs:
             - ./node_modules
       - run:
           name: test
-          command: ./circleci/run-tests.sh
+          command: ./.circleci/run-tests.sh
       - store_artifacts:
           path: coverage
           prefix: coverage
