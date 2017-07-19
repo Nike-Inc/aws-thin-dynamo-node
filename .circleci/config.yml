@@ -20,7 +20,7 @@ jobs:
           command: /build-scripts/lib-run-tests.sh
       - run:
           name: build report
-          command: npm run report:ci
+          command: /build-scripts/generate-test-report.sh
           when: always
       - store_artifacts:
           path: coverage
