@@ -18,6 +18,10 @@ jobs:
       - run:
           name: test
           command: /build-scripts/lib-run-tests.sh
+      - run:
+          name: build report
+          command: /build-scripts/generate-test-report.sh
+          when: always
       - store_artifacts:
           path: coverage
           prefix: coverage
