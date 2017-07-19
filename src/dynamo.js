@@ -46,9 +46,9 @@ function dynamoRequest (context, action, params, callback) {
   }))
 }
 
-const queryParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'KeyConditions', 'QueryFilter']
+// const queryParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'KeyConditions', 'QueryFilter']
 function query (context, params, callback) {
-  return dynamoRequest(context, 'Query', context.convert(params, queryParamsToConvert), callback)
+  // return dynamoRequest(context, 'Query', context.convert(params, queryParamsToConvert), callback)
 }
 
 const getParamsToConvert = ['Key']
