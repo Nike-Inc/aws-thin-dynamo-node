@@ -17,3 +17,16 @@ As this attempts to duplicate the Official Client's API, you can use [the AWS do
 ```
 npm i aws-thin-dynamo
 ```
+
+# Usage
+
+```javascript
+var dynamo = require('aws-thin-dynamo')
+var client = dynamo({ region: 'us-west-2'})
+// client is a API-compliant implemention of the AWS DocumentClient
+
+```
+
+# Constructor differences
+
+The client constructor does not implemenet the `service` or `convertEmptyValues` options. However it does implement a `removeEmptyValues` boolean option that instead of converting empty values to the DynamoDB "Null" object type, simply removes them. The client can still deserialize existing DynamoDB "Null" types.
