@@ -30,7 +30,9 @@ function makeClient (options) {
     update: update.bind(null, context),
     delete: deleteItem.bind(null, context),
     batchGet: batchGet.bind(null, context),
-    batchWrite: batchWrite.bind(null, context)
+    batchWrite: batchWrite.bind(null, context),
+    batchWriteAll: batchWriteAll.bind(null, context),
+    batchGetAll: batchGetAll.bind(null, context)
   }
 }
 
@@ -103,3 +105,47 @@ function batchWrite (context, params, callback) {
 function createSet (context, list, options) {
   return new DynamoSet(list, options)
 }
+
+/*
+These are convenience methods to handle automatic paging for batch requests
+They are not a part of the AWS DocumentClient, but "page all" is a generally
+useful feature that is likely to be written by multiple consumers
+*/
+
+function batchWriteAll (context, params, callback) {
+  let items = []
+  util.eachObj(params.RequestItems, (table, requests) => {
+    items = items.concat(requests.map(r => ({ table: table, request: r })))
+  })
+  let batches = util.createBatches(items)
+
+  let process = (batch) => {
+    let items = batch.reduce((r, item) => {
+      if (r[item.table] === undefined) r[item.table] = []
+      r[item.table].push(item.request)
+    }, {})
+    return util.processBatch((p) => batchWrite(context, Object.assign({}, params, p), items))
+      .then(() => batches.length !== 0 ? process(batches.shift()) : null)
+  }
+  return process(batches.shift())
+}
+
+function batchGetAll (context, params, callback) {
+  let tables = Object.keys(params.RequestItems)
+  if (tables.length !== 1) {
+    throw new Error('batchGetAll currently only supports paging for one table. If you need support for multiple tables consider adding a Pull Request')
+  }
+  let table = tables[0]
+  let batches = util.createBatches(params.RequestItems[table].Keys)
+  let responses = { [table]: [] }
+  let process = (batch) => {
+    return util.processBatch(p => batchGet(context, Object.assign({}, params, p)))
+      .then(result => {
+        responses[table] = responses[table].concat(result.Responses[table])
+        return batches.length !== 0 ? process(batches.shift()) : { Responses: responses }
+      })
+  }
+  return process(batches.shift())
+}
+
+// UnprocessedKeys

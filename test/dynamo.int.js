@@ -123,7 +123,7 @@ test.only('client should be able to batchGet and batchWrite', t => {
         }
       }
     })
-    log('batch get', result.Item)
+    log('batch get', result.Responses[testTable])
 
     let deleteResult = yield client.batchWrite({
       RequestItems: {
