@@ -31,6 +31,7 @@ function makeClient (options) {
     delete: deleteItem.bind(null, context),
     batchGet: batchGet.bind(null, context),
     batchWrite: batchWrite.bind(null, context),
+    scanAll: scanAll.bind(null, context),
     batchWriteAll: batchWriteAll.bind(null, context),
     batchGetAll: batchGetAll.bind(null, context)
   }
@@ -53,6 +54,11 @@ function query (context, params, callback) {
   return dynamoRequest(context, 'Query', context.convert(params, queryParamsToConvert), callback)
 }
 
+const scanParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'ScanFilter']
+function scan (context, params, callback) {
+  return dynamoRequest(context, 'Scan', context.convert(params, scanParamsToConvert), callback)
+}
+
 const getParamsToConvert = ['Key']
 function get (context, params, callback) {
   return dynamoRequest(context, 'GetItem', context.convert(params, getParamsToConvert), callback)
@@ -66,11 +72,6 @@ function deleteItem (context, params, callback) {
 const putParamsToConvert = ['Item', 'ExpressionAttributeValues']
 function put (context, params, callback) {
   return dynamoRequest(context, 'PutItem', context.convert(params, putParamsToConvert), callback)
-}
-
-const scanParamsToConvert = ['ExclusiveStartKey', 'ExpressionAttributeValues', 'ScanFilter']
-function scan (context, params, callback) {
-  return dynamoRequest(context, 'Scan', context.convert(params, scanParamsToConvert), callback)
 }
 
 const updateParamsToConvert = ['Key', 'ExpressionAttributeValues']
@@ -111,6 +112,27 @@ These are convenience methods to handle automatic paging for batch requests
 They are not a part of the AWS DocumentClient, but "page all" is a generally
 useful feature that is likely to be written by multiple consumers
 */
+
+function scanAll (context, params) {
+  let result
+  let lastKey
+  let run = () => scan(context, Object.assign({}, params, { ExclusiveStartKey: lastKey })).then(response => {
+    if (result === undefined) result = response
+    else {
+      result.Count += response.Count
+      result.ScannedCount += response.ScannedCount
+      result.Items = result.Items.concat(response.Items)
+    }
+    if (response.LastEvaluatedKey) {
+      lastKey = response.LastEvaluatedKey
+      return run()
+    }
+    delete result.LastEvaluatedKey
+    return result
+  })
+
+  return Promise.resolve(run())
+}
 
 function batchWriteAll (context, params) {
   let requestPool = Object.assign({}, params.RequestItems)
