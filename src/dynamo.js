@@ -114,8 +114,13 @@ useful feature that is likely to be written by multiple consumers
 */
 
 function scanAll (context, params) {
+  params = Object.assign({}, params)
   let result
   let lastKey
+  let scanLimit = params.ScanLimit
+  let itemLimit = params.ItemLimit
+  delete params.ScanLimit
+  delete params.ItemLimit
   let run = () => scan(context, Object.assign({}, params, { ExclusiveStartKey: lastKey })).then(response => {
     if (result === undefined) result = response
     else {
@@ -123,7 +128,9 @@ function scanAll (context, params) {
       result.ScannedCount += response.ScannedCount
       result.Items = result.Items.concat(response.Items)
     }
-    if (response.LastEvaluatedKey) {
+    if (response.LastEvaluatedKey &&
+      (scanLimit === undefined || result.ScannedCount < scanLimit) &&
+      (itemLimit === undefined || result.Count < itemLimit)) {
       lastKey = response.LastEvaluatedKey
       return run()
     }

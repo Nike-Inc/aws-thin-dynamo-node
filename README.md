@@ -37,10 +37,15 @@ The DocumentClient constructor supports some different options than the AWS vers
   * `maxRetries` - Maximum number of retries. **(COMING SOON)**
   * `retryBackoff` - same as the `retryDelayOptions.customBackoff` that the DocumentClient's `service` option takes: a function with the signature `(retryCount) => msToWait`. **(COMING SOON)**
 
-# Automatically Paging Batch Requests
+# Automatically Paging Requests
 
 `batchGet` and `batchWrite` allow a maximum of 25 requests, and leave the retrying of "Unprocessed Items" to you. The most common goal with these functions is to retry all unprocessed requests and then move on to the next page, so this client provides two methods that can handle any number of items by breaking them into batches, and automatically retries Unprocessed items.
 
 **batchGetAll** and **batchWriteAll** take the same parameters as **batchGet** and **batchWrite**, except
  * No `callback`, they only support returning promises
  * `params.PageSize` can control the maximum page size used. This number cannot be over 25, but AWS only supports requests of up to 16mb. If 25 items is higher than 16mb you will need to provide a page size small enough that each batch will be under the limit.
+
+ **scanAll** will auto page through the table, it takes the same parameters as **scan** except
+ * No `callback`, it only supports returning promises.
+ * `ScanLimit` - since `Limit` controls the maximum number of results per scan, `ScanLimit` will stop automatically paging after reaching `ScannedCount` (this is the number of items scanned, not the number of items returned). Since `scan` returns as many requests as it can under `Limit`, it is possible to get back more results than `ScanLimit` if the last scan start under the limit and finishes by crossing it.
+ * `ItemLimit - Like `ScanLimit` except it stops are `Count` has been reached.
