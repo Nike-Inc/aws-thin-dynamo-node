@@ -137,7 +137,16 @@ test('client should be able to batchGet and batchWrite', t => {
   })
 })
 
-test.only('client should be able to batchWriteAll and batchGetAll', t => {
+test.only('client should be able to scanAll', t => {
+  let client = dynamo({ logger: testLogger, region: 'us-west-2' })
+
+  return co(function * () {
+    let result = yield client.scanAll({ TableName: testTable, Limit: 1 })
+    log('result', result)
+  })
+})
+
+test('client should be able to batchWriteAll and batchGetAll', t => {
   let client = dynamo({ logger: testLogger, region: 'us-west-2' })
 
   // force testing of paging by using more than 25
