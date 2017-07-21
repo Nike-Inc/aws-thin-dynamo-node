@@ -108,7 +108,7 @@ test('client should be able to delete', t => {
   })
 })
 
-test.only('client should be able to batchGet and batchWrite', t => {
+test('client should be able to batchGet and batchWrite', t => {
   let client = dynamo({ logger: testLogger, region: 'us-west-2' })
   let batchItems = [1, 2, 3].map(id => ({ id: `TEST_ENTRY_DELETE_ME_${id}`, name: id }))
   return co(function * () {
@@ -123,7 +123,7 @@ test.only('client should be able to batchGet and batchWrite', t => {
         }
       }
     })
-    log('batch get', result.Item)
+    log('batch get', result.Responses[testTable])
 
     let deleteResult = yield client.batchWrite({
       RequestItems: {
@@ -134,5 +134,20 @@ test.only('client should be able to batchGet and batchWrite', t => {
         }))
       }
     })
+  })
+})
+
+test.only('client should be able to batchWriteAll and batchGetAll', t => {
+  let client = dynamo({ logger: testLogger, region: 'us-west-2' })
+
+  // force testing of paging by using more than 25
+  let data = [...Array(30)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+  return co(function * () {
+    yield client.batchWriteAll({ RequestItems: { [testTable]: data.map(c => ({ PutRequest: { Item: c } })) } })
+    log('\n\n\n')
+    let readResult = yield client.batchGetAll({ RequestItems: { [testTable]: { Keys: data } } })
+    log('read', readResult)
+    data = [...Array(30)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    yield client.batchWriteAll({ RequestItems: { [testTable]: data.map(c => ({ DeleteRequest: { Key: c } })) } })
   })
 })
