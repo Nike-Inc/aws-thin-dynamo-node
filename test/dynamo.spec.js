@@ -70,6 +70,14 @@ const matchesAws = co.wrap(function * (t, method, params, result, statusCode = 2
   t.deepEqual(clientResult, awsResult, 'matches aws result')
 })
 
+let mock = (t, input, output, responseCode = 200) => {
+  nock(dynamoEndpoint).replyContentLength().replyDate().defaultReplyHeaders(dynamoHeaders).post('/')
+    .reply(function (uri, requestBody, cb) {
+      t.deepEqual(requestBody, input, 'matches input')
+      cb(null, [responseCode, JSON.stringify(output)])
+    })
+}
+
 const simpleItem = { name: '1', age: 20, addresses: [1.2, 2.2, 3.3] }
 const complexItem = { name: '1', sub: '2', limits: { count: 2, types: [ {filter: '1'}, { filter: '2' } ] }, addresses: [1.2, 2.2, 3.3] }
 
@@ -126,6 +134,85 @@ test('batchGet', spec => {
 
 test('batchWrite', spec => {
   let batchComplex = { UnprocessedItems: { } }
-  let getParams = { RequestItems: { [table]: [ { DeleteRequest: { Key: { name: simpleItem.name } } } ] } }
-  spec.test('should match complex', t => matchesAws(t, 'batchWrite', getParams, batchComplex))
+  let deleteParams = { RequestItems: { [table]: [ { DeleteRequest: { Key: { name: simpleItem.name } } } ] } }
+  spec.test('should match complex', t => matchesAws(t, 'batchWrite', deleteParams, batchComplex))
+})
+
+test('batchWriteAll', spec => {
+  spec.test('sends 30 items in two pages', t => {
+    t.plan(2)
+    let data = [...Array(30)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: data.map(c => ({ PutRequest: { Item: c } })) } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(0, 25).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(25).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    return client.batchWriteAll(deleteParams)
+  })
+  spec.test('allows custom page size', t => {
+    t.plan(2)
+    let data = [...Array(20)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { PageSize: 10, RequestItems: { [table]: data.map(c => ({ PutRequest: { Item: c } })) } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(0, 10).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(10).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    return client.batchWriteAll(deleteParams)
+  })
+  spec.test('handles multiple tables', t => {
+    t.plan(2)
+    let data = [...Array(20)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: data.map(c => ({ PutRequest: { Item: c } })), [table + '2']: data.map(c => ({ PutRequest: { Item: c } })) } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })), [table + '2']: data.slice(0, 5).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    mock(t, JSON.stringify({ RequestItems: { [table + '2']: data.slice(5).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    return client.batchWriteAll(deleteParams)
+  })
+  spec.test('retries unprocessed items', t => {
+    t.plan(2)
+    let data = [...Array(25)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: data.map(c => ({ PutRequest: { Item: c } })) } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(0, 25).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), { UnprocessedItems: { [table]: data.slice(20).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } })
+    mock(t, JSON.stringify({ RequestItems: { [table]: data.slice(20).map(c => ({ PutRequest: { Item: awsConverter.marshall(c) } })) } }), {})
+    return client.batchWriteAll(deleteParams)
+  })
+})
+
+test('batchGetAll', spec => {
+  spec.test('sends 30 items in two pages', t => {
+    t.plan(3)
+    let data = [...Array(30)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: { Keys: data.slice(0) } } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(0, 25).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(0, 25).map(awsConverter.marshall) } })
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(25).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(25).map(awsConverter.marshall) } })
+    return client.batchGetAll(deleteParams).then(result => {
+      t.deepEqual(data, result.Responses[table], 'returned all rows')
+    })
+  })
+  spec.test('allows custom page size', t => {
+    t.plan(3)
+    let data = [...Array(20)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { PageSize: 10, RequestItems: { [table]: { Keys: data.slice(0) } } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(0, 10).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(0, 10).map(awsConverter.marshall) } })
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(10).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(10).map(awsConverter.marshall) } })
+    return client.batchGetAll(deleteParams).then(result => {
+      t.deepEqual(data, result.Responses[table], 'returned all rows')
+    })
+  })
+  spec.test('handles multiple tables', t => {
+    t.plan(4)
+    let data = [...Array(20)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: { Keys: data.slice(0) }, [table + '2']: { Keys: data.slice(0) } } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(0).map(awsConverter.marshall) }, [table + '2']: { Keys: data.slice(0, 5).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(0).map(awsConverter.marshall), [table + '2']: data.slice(0, 5).map(awsConverter.marshall) } })
+    mock(t, JSON.stringify({ RequestItems: { [table + '2']: { Keys: data.slice(5).map(awsConverter.marshall) } } }), { Responses: { [table + '2']: data.slice(5).map(awsConverter.marshall) } })
+    return client.batchGetAll(deleteParams).then(result => {
+      t.deepEqual(data, result.Responses[table], 'returned table rows')
+      t.deepEqual(data, result.Responses[table + '2'], 'returned table2 rows')
+    })
+  })
+  spec.test('retries unprocessed items', t => {
+    t.plan(3)
+    let data = [...Array(25)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let deleteParams = { RequestItems: { [table]: { Keys: data.slice(0) } } }
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(0, 25).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(0, 20).map(awsConverter.marshall) }, UnprocessedKeys: { [table]: data.slice(20).map(awsConverter.marshall) } })
+    mock(t, JSON.stringify({ RequestItems: { [table]: { Keys: data.slice(20).map(awsConverter.marshall) } } }), { Responses: { [table]: data.slice(20).map(awsConverter.marshall) } })
+    return client.batchGetAll(deleteParams).then(result => {
+      t.deepEqual(data, result.Responses[table], 'returned all rows')
+    })
+  })
 })

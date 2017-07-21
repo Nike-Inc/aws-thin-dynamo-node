@@ -12,9 +12,7 @@ module.exports = {
   formatError: formatError,
   signedRequest: signedRequest,
   convertParamsToDynamo: convertParamsToDynamo,
-  convertToDynamo: converter.toDynamo,
-  createBatches: createBatches,
-  processBatch: processBatch
+  convertToDynamo: converter.toDynamo
 }
 
 function noop () { }
@@ -117,45 +115,4 @@ function convertParamsToDynamo (context, params, keysToConvert) {
     })
   }
   return params
-}
-
-function createBatches (items) {
-  return items.reduce((result, item) => {
-    var currentBatch = result[result.length - 1]
-
-    if (currentBatch.length === 25) {
-      currentBatch = []
-      result.push(currentBatch)
-    }
-
-    currentBatch.push(item)
-    return result
-  }, [[]])
-}
-
-function processBatch (processor, batchItems, collector) {
-  let attempt = 0
-  let process = (batch) => {
-    return processor(batch)
-      .then(result => {
-        let next = collector(result)
-        if (!next) {
-          return result
-        }
-        attempt++
-        if (attempt > 4) {
-          throw new Error('Unable to process all batch items')
-        }
-        return process(next)
-      })
-  }
-
-  return process(batchItems)
-}
-
-function delay () {
-  var args = Array.prototype.slice.call(arguments)
-  return new Promise(function (resolve) {
-    setTimeout.apply(null, [resolve].concat(args))
-  })
 }

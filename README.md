@@ -34,5 +34,13 @@ The DocumentClient constructor supports some different options than the AWS vers
   * `service`. To specify maximum retries or custom backoff timings, see below
 * **Additional options** - The AWS Document client does not have these options, this client does
   * `removeEmptyValues` - unlike `convertEmptyValues` which uses the DynamoDB `Null` type, this option will remove empty values entirely. This option has lower precedence than `convertEmptyValues`; if both are specified, this one is ignored.
-  * `maxRetries` - Maximum number of retries.
-  * `retryBackoff` - same as the `retryDelayOptions.customBackoff` that the DocumentClient's `service` option takes: a function with the signature `(retryCount) => msToWait`
+  * `maxRetries` - Maximum number of retries. **(COMING SOON)**
+  * `retryBackoff` - same as the `retryDelayOptions.customBackoff` that the DocumentClient's `service` option takes: a function with the signature `(retryCount) => msToWait`. **(COMING SOON)**
+
+# Automatically Paging Batch Requests
+
+`batchGet` and `batchWrite` allow a maximum of 25 requests, and leave the retrying of "Unprocessed Items" to you. The most common goal with these functions is to retry all unprocessed requests and then move on to the next page, so this client provides two methods that can handle any number of items by breaking them into batches, and automatically retries Unprocessed items.
+
+**batchGetAll** and **batchWriteAll** take the same parameters as **batchGet** and **batchWrite**, except
+ * No `callback`, they only support returning promises
+ * `params.PageSize` can control the maximum page size used. This number cannot be over 25, but AWS only supports requests of up to 16mb. If 25 items is higher than 16mb you will need to provide a page size small enough that each batch will be under the limit.

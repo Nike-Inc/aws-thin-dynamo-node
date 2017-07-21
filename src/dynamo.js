@@ -112,40 +112,90 @@ They are not a part of the AWS DocumentClient, but "page all" is a generally
 useful feature that is likely to be written by multiple consumers
 */
 
-function batchWriteAll (context, params, callback) {
-  let items = []
-  util.eachObj(params.RequestItems, (table, requests) => {
-    items = items.concat(requests.map(r => ({ table: table, request: r })))
+function batchWriteAll (context, params) {
+  let requestPool = Object.assign({}, params.RequestItems)
+  let pageSize = params.PageSize
+  delete params.PageSize
+
+  let run = () => {
+    let batch = sliceWriteBatch(requestPool, pageSize)
+    context.logger.debug('batch', batch)
+    context.logger.debug('pool remaining', requestPool)
+    if (batch === undefined || Object.keys(batch).length === 0) return
+    context.logger.debug('writing')
+    return batchWrite(context, Object.assign({}, params, { RequestItems: batch }))
+      .then(response => {
+        let unprocessed = response.UnprocessedItems && Object.keys(response.UnprocessedItems).length !== 0 ? response.UnprocessedItems : null
+        context.logger.debug('unprocessed', unprocessed)
+        if (!unprocessed) return
+        util.eachObj(unprocessed, (table, items) => {
+          requestPool[table] = requestPool[table].concat(items)
+        })
+      }).then(() => run())
+  }
+
+  return Promise.resolve(run())
+}
+
+function sliceWriteBatch (pool, pageSize) {
+  pageSize = pageSize || 25
+  let requestCount = 0
+  let batch = {}
+  let tables = Object.keys(pool)
+  if (tables.length === 0) return
+  tables.forEach((tableName, i) => {
+    let table = pool[tableName]
+    if (requestCount === pageSize || !table.length) return
+    let items = table.splice(0, pageSize - requestCount)
+    if (items.length === 0) return
+    requestCount += items.length
+    batch[tableName] = batch[tableName] !== undefined ? batch[tableName].concat(items) : items
   })
-  let batches = util.createBatches(items)
-
-  let process = (batch) => {
-    let items = batch.reduce((r, item) => {
-      if (r[item.table] === undefined) r[item.table] = []
-      r[item.table].push(item.request)
-    }, {})
-    return util.processBatch((p) => batchWrite(context, Object.assign({}, params, p), items))
-      .then(() => batches.length !== 0 ? process(batches.shift()) : null)
-  }
-  return process(batches.shift())
+  return batch
 }
 
-function batchGetAll (context, params, callback) {
-  let tables = Object.keys(params.RequestItems)
-  if (tables.length !== 1) {
-    throw new Error('batchGetAll currently only supports paging for one table. If you need support for multiple tables consider adding a Pull Request')
+function batchGetAll (context, params) {
+  let requestPool = Object.assign({}, params.RequestItems)
+  let pageSize = params.PageSize
+  delete params.PageSize
+  let responses = {}
+  let run = () => {
+    let batch = sliceGetBatch(requestPool, pageSize)
+    context.logger.debug('batch', batch)
+    context.logger.debug('pool remaining', requestPool)
+    if (batch === undefined || Object.keys(batch).length === 0) return
+
+    return batchGet(context, Object.assign({}, params, { RequestItems: batch }))
+      .then(response => {
+        util.eachObj(response.Responses, (table, items) => {
+          if (!responses[table]) responses[table] = []
+          responses[table] = responses[table].concat(items)
+        })
+        let unprocessed = response.UnprocessedKeys && Object.keys(response.UnprocessedKeys).length !== 0 ? response.UnprocessedKeys : null
+        if (!unprocessed) return
+        util.eachObj(unprocessed, (table, items) => {
+          requestPool[table].Keys = requestPool[table].Keys.concat(items)
+        })
+      }).then(() => run())
   }
-  let table = tables[0]
-  let batches = util.createBatches(params.RequestItems[table].Keys)
-  let responses = { [table]: [] }
-  let process = (batch) => {
-    return util.processBatch(p => batchGet(context, Object.assign({}, params, p)))
-      .then(result => {
-        responses[table] = responses[table].concat(result.Responses[table])
-        return batches.length !== 0 ? process(batches.shift()) : { Responses: responses }
-      })
-  }
-  return process(batches.shift())
+
+  return Promise.resolve(run()).then(() => ({ Responses: responses }))
 }
 
-// UnprocessedKeys
+function sliceGetBatch (pool, pageSize) {
+  pageSize = pageSize || 25
+  let requestCount = 0
+  let batch = {}
+  let tables = Object.keys(pool)
+  if (tables.length === 0) return
+  tables.forEach((tableName, i) => {
+    let table = pool[tableName]
+    if (requestCount === pageSize || !table.Keys.length) return
+    let keys = table.Keys.splice(0, pageSize - requestCount)
+    if (keys.length === 0) return
+    requestCount += keys.length
+    if (!batch[tableName]) batch[tableName] = Object.assign({}, table, { Keys: [] })
+    batch[tableName].Keys = batch[tableName].Keys.concat(keys)
+  })
+  return batch
+}
