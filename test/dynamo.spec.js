@@ -150,6 +150,26 @@ test('scanAll', spec => {
       t.deepEqual(data, result.Items, 'returned all rows')
     })
   })
+  spec.test('should respect ScanLimit', t => {
+    t.plan(3)
+    let data = [...Array(3)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let scanParams = { TableName: table, Limit: 1, ScanLimit: 2 }
+    mock(t, JSON.stringify({ TableName: table, Limit: 1 }), { Items: data.slice(0, 1).map(awsConverter.marshall), LastEvaluatedKey: awsConverter.marshall(data[0]), Count: 1, ScannedCount: 1 })
+    mock(t, JSON.stringify({ TableName: table, Limit: 1, ExclusiveStartKey: awsConverter.marshall(data[0]) }), { Items: data.slice(1, 2).map(awsConverter.marshall), LastEvaluatedKey: awsConverter.marshall(data[1]), Count: 1, ScannedCount: 1 })
+    return client.scanAll(scanParams).then(result => {
+      t.deepEqual(data.slice(0, 2), result.Items, 'returned first two rows')
+    })
+  })
+  spec.test('should respect ItemLimit', t => {
+    t.plan(3)
+    let data = [...Array(3)].map((_, i) => ({ clientId: `test_delete_me_${i}` }))
+    let scanParams = { TableName: table, Limit: 1, ItemLimit: 2 }
+    mock(t, JSON.stringify({ TableName: table, Limit: 1 }), { Items: data.slice(0, 1).map(awsConverter.marshall), LastEvaluatedKey: awsConverter.marshall(data[0]), Count: 1, ScannedCount: 1 })
+    mock(t, JSON.stringify({ TableName: table, Limit: 1, ExclusiveStartKey: awsConverter.marshall(data[0]) }), { Items: data.slice(1, 2).map(awsConverter.marshall), LastEvaluatedKey: awsConverter.marshall(data[1]), Count: 1, ScannedCount: 1 })
+    return client.scanAll(scanParams).then(result => {
+      t.deepEqual(data.slice(0, 2), result.Items, 'returned first two rows')
+    })
+  })
 })
 
 test('batchWriteAll', spec => {
