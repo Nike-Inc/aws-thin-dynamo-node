@@ -64,7 +64,7 @@ test('converter', spec => {
 
   spec.test('toDynamo should remove empty values when removeEmptyValues is set', t => {
     t.plan(1)
-    let result = dynamoConverter.toDynamo({ emptyBuffer: Buffer.from(''), emptyString: '', name: 'tim' }, { removeEmptyValues: true })
+    let result = dynamoConverter.toDynamo({ emptyBuffer: Buffer.from(''), emptyString: '', undefinedString: undefined, name: 'tim' }, { removeEmptyValues: true })
     let match = awsConverter.marshall({ name: 'tim' })
     t.deepEqual(result, match, 'matches aws object')
     t.end()

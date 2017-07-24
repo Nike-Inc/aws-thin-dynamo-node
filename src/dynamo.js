@@ -12,7 +12,7 @@ function makeClient (options) {
 
   context.logger = util.logWrapper(context.logger)
   context.convert = util.convertParamsToDynamo.bind(null, context)
-  context.converterOptions = { removeEmptyValues: context.removeEmptyValues }
+  context.converterOptions = { removeEmptyValues: context.removeEmptyValues, convertEmptyValues: context.convertEmptyValues }
   if (!context.credentials && context.secretAccessKey) {
     context.credentials = {
       secretAccessKey: context.secretAccessKey,

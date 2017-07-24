@@ -23,8 +23,8 @@ function base64BufferJson () {
 
 function mapAttrToDb (val, key, options) {
   var numToStr = _numToStr.bind(null, key)
-  if (val == null) return { NULL: true }
-  if (val === '') return asEmpty(key, options)
+  if (val === null) return { NULL: true }
+  if (val === '' || val === undefined) return asEmpty(key, options)
   switch (typeof val) {
     case 'string': return {S: val}
     case 'boolean': return {BOOL: val}
