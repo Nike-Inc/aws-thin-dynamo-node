@@ -114,12 +114,21 @@ test('get', spec => {
   })
 })
 
-test('put', spec => {
+test.only('put', spec => {
   let putSimple = { Attributes: awsConverter.marshall(simpleItem) }
   let putComplex = { Attributes: {approvers: {B: 'c3RyaW5n'}, clientId: {S: 'delete_me'}} }
   let putParams = p({ Item: simpleItem, ReturnValues: 'ALL_OLD' })
   spec.test('should match simple', t => matchesAws(t, 'put', putParams, putSimple))
   spec.test('should match complex', t => matchesAws(t, 'put', putParams, putComplex))
+  spec.test('should pass converter options through', t => {
+    let missingItem = Object.assign({}, simpleItem)
+    missingItem.nullName = null
+    missingItem.emptyName = ''
+    missingItem.undefinedName = undefined
+    const client = dynamo({ region, logger, removeEmptyValues: true })
+    mock(t, JSON.stringify({ TableName: table, Item: awsConverter.marshall(simpleItem) }), { })
+    return client.put({ TableName: table, Item: missingItem })
+  })
 })
 
 test('delete', spec => {
