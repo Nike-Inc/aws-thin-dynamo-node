@@ -14,7 +14,7 @@ module.exports = {
 function asEmpty (key, options) {
   if (options && options.convertEmptyValues) return { NULL: true }
   if (options && options.removeEmptyValues) return undefined
-  throw new Error(`empty string and buffer values are invalid. ${key} was empty. Use "removeEmptyValues" option to automatically fix this.`)
+  throw new Error(`empty string and buffer values are invalid. ${key} was empty. Use "removeEmptyValues" option to automatically fix this. options: ${JSON.stringify(options)}`)
 }
 
 function base64BufferJson () {
@@ -48,7 +48,7 @@ function mapAttrToDb (val, key, options) {
   if (Array.isArray(val)) {
     return { L: val.map((v, i) => mapAttrToDb(v, i, options)) }
   }
-  if (typeof val === 'object') return { M: mapToDb(val) }
+  if (typeof val === 'object') return { M: mapToDb(val, options) }
   // Other types (inc dates) are mapped as they are in JSON
   val = typeof val.toJSON === 'function' ? val.toJSON() : JSON.stringify(val)
   if (val) return {S: val}

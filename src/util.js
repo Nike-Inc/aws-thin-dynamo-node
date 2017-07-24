@@ -104,13 +104,13 @@ function signedRequest (context, params) {
 function convertParamsToDynamo (context, params, keysToConvert) {
   params = Object.assign({}, params)
   keysToConvert.filter(k => params[k] !== undefined).forEach(key => {
-    context.logger.debug('converting', key, params[key])
+    context.logger.debug('converting', key, params[key], context.converterOptions)
     params[key] = converter.toDynamo(params[key], context.converterOptions)
     context.logger.debug('conversion complete', key, params[key])
   })
   if (params.Expected) {
     eachObj(params.Expected, (key, value) => {
-      if (value.value !== undefined) value.Value = converter.toDynamo(value.Value)
+      if (value.value !== undefined) value.Value = converter.toDynamo(value.Value, context.converterOptions)
       if (value.AttributeValueList !== undefined) value.AttributeValueList = value.AttributeValueList.map(converter.toDynamo)
     })
   }
