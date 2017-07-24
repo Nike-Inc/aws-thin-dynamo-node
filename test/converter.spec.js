@@ -34,6 +34,7 @@ const jsObject = {
 }
 
 const dynamoObject = awsConverter.marshall(jsObject)
+const options = { convertEmptyValues: true }
 
 // test('set', t => {
 //   let setObject = {
@@ -48,7 +49,7 @@ const dynamoObject = awsConverter.marshall(jsObject)
 
 test('converter', spec => {
   spec.test('toDynamo should match aws for non-empty, non-binary types', t => {
-    let result = dynamoConverter.toDynamo(jsObject)
+    let result = dynamoConverter.toDynamo(jsObject, options)
     t.deepEqual(result, dynamoObject, 'should match aws marshall exactly')
 
     t.end()
