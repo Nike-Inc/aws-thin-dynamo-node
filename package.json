@@ -1,6 +1,6 @@
 {
   "name": "aws-thin-dynamo",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "aws thin Dynamo client",
   "main": "src/dynamo.js",
   "repository": "git@github.nike.com:ngp/aws-thin-ses.git",
