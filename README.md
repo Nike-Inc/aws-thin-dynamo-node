@@ -5,7 +5,13 @@
 
 # What is this for?
 
-The [AWS JS SDK](https://github.com/aws/aws-sdk-js) does a lot. For Lambdas is does *too much*; it incurs a 1-2 seconds cold-start time, depending on what you load from it. Even for directly loading the smaller clients, it loads 800kb of code from "core". If you really need to squeeze out that extra performance for Lambda cold-starts, you need a smaller client. This client, with dependencies, is ~30kb. If you are using other thin clients, those dependencies are identical, and share 8kb of the size (its mostly the AWS V4 request signer). In a 256mb Node Lambda the thin client cold starts in ~10ms, compared to ~160ms for the AWS SDK Core.
+The [AWS JS SDK](https://github.com/aws/aws-sdk-js) does a lot. For Lambdas is does *too much*; the "core" is loaded even for individual services like dynamo and includes things like an XML builder and lodash, which are rarely needed. This impacts the cold-start time of lambda's significantly. 
+
+On a 256mb Node Lambda
+* 300-500ms to load the Full AWS SDK 
+* 150-250ms to just load the AWS SDK dynamo client (`require('aws-sdk/clients/dynamodb')`)
+
+Compare that to **aws-thin-dynamo** on a 256mb lambda: **~15ms**.
 
 **aws-thin-dynamo** attempts to be a drop-in replacement for the API it does cover. For ease of use the `callback` parameter can be ommitted from all async calls to get a Promise instead.
 
@@ -49,3 +55,6 @@ The DocumentClient constructor supports some different options than the AWS vers
  * No `callback`, it only supports returning promises.
  * `ScanLimit` - since `Limit` controls the maximum number of results per scan, `ScanLimit` will stop automatically paging after reaching `ScannedCount` (this is the number of items scanned, not the number of items returned). Since `scan` returns as many requests as it can under `Limit`, it is possible to get back more results than `ScanLimit` if the last scan start under the limit and finishes by crossing it.
  * `ItemLimit - Like `ScanLimit` except it stops are `Count` has been reached.
+
+ # Notes on load time
+Lambdas take time to load code, the more code the more time. This cost is the work to parse and JIT, Minifying/Uglifying/Bundling the code does not make an impact. Because the CPU size of a lambda is bound to the memory, a 128mb lambda will load slower than a 256mb lambda. The CPU parse time has rapidly diminishing returns, and in most cases more than 512mb won't improve things by more than 1-3%. Since minifying your code doesn't impact the time it takes to load it the size of your code in KB can only give you a rough idea of how long it will take (The "Core" code in the AWS SDK is ~800kb, the aws-thin-dynamo client is ~30kb). Accurate information requires performance profiling.
