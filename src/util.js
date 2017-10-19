@@ -4,6 +4,7 @@ const request = require('request-micro')
 const aws4 = require('aws4')
 const converter = require('./converter')
 const util = require('util')
+const url = require('url')
 
 module.exports = {
   logWrapper: logWrapper,
@@ -73,6 +74,10 @@ function formatError (context, obj) {
 }
 
 function signedRequest (context, params) {
+  let endpoint
+  if (context.endpoint) {
+    endpoint = url.parse(context.endpoint)
+  }
   try {
     let defaultParams = {
       service: 'dynamodb',
@@ -80,13 +85,16 @@ function signedRequest (context, params) {
         'Content-Type': 'application/x-amz-json-1.0',
         'X-Amz-Target': `DynamoDB_20120810.${params.action}`
       },
+      hostname: endpoint ? endpoint.hostname : undefined,
+      port: endpoint ? endpoint.port : undefined,
       method: 'POST',
       path: '/',
       region: context.region,
-      protocol: 'https:'
+      protocol: endpoint ? endpoint.protocol : 'https:'
     }
-    context.logger.debug('sending request', params)
-    return request(aws4.sign(Object.assign(defaultParams, params), context.credentials)).then(result => {
+    context.logger.debug('sending request', params, defaultParams)
+    let signed = aws4.sign(Object.assign(defaultParams, params), context.credentials)
+    return request(signed).then(result => {
       context.logger.info('response status', result.statusCode)
       context.logger.debug('response headers', result.headers)
       context.logger.debug('receieved raw data', result.data.toString())

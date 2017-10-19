@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.11.0] -2017-10-19
+## Added
+support for `endpoint` on dynamo client
+
 ## [0.10.4] -2017-07-24
 ## Fixed
 toDynamo conversion of `null` values
