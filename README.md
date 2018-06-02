@@ -58,3 +58,16 @@ The DocumentClient constructor supports some different options than the AWS vers
 
  # Notes on load time
 Lambdas take time to load code, the more code the more time. This cost is the work to parse and JIT, Minifying/Uglifying/Bundling the code does not make an impact. Because the CPU size of a lambda is bound to the memory, a 128mb lambda will load slower than a 256mb lambda. The CPU parse time has rapidly diminishing returns, and in most cases more than 512mb won't improve things by more than 1-3%. Since minifying your code doesn't impact the time it takes to load it the size of your code in KB can only give you a rough idea of how long it will take (The "Core" code in the AWS SDK is ~800kb, the aws-thin-dynamo client is ~30kb). Accurate information requires performance profiling.
+
+# Test Utilities
+
+When writing integration tests instead of mocking the database it is better to use tools like [Dynalite](https://github.com/mhart/dynalite) to create an in-memory Dynamo database. The AWS SDK supports table creation, but including the sdk just to create tables for testing is a bit cumbersome. This library includes a small utilities class with `createTable` and `deleteTable` that take the same parameters as those on the SDK. These methods are not loaded normally by the library, so their presence should not impact cold start.
+
+*Example Use*
+```
+const dynamoUtils = require('aws-thin-dynamo/src/testUtils')({
+  region: 'us-west-2',
+  endpoint: dynamoEndpoint // http://localhost:4567 for dynalite
+})
+dynamoUtils.createTable({ /* params 8> }).then(/* ... */)
+```
