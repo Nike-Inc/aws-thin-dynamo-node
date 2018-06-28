@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.12.0] - 2018-05-09
+## Added
+Custom Agent support and `useKeepAlive` shorthand options
+
 ## [0.11.2] - 2018-06-01
 ## Added
 Test utils for creating and deleting tables

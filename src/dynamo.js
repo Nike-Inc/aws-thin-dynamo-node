@@ -21,6 +21,13 @@ function makeClient (options) {
     }
   }
 
+  if (context.useKeepAlive) {
+    let https = require('https')
+    context.agent = new https.Agent({
+      keepAlive: true
+    })
+  }
+
   return {
     createSet: createSet.bind(null, context),
     query: query.bind(null, context),
