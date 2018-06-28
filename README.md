@@ -42,6 +42,8 @@ The DocumentClient constructor supports some different options than the AWS vers
   * `removeEmptyValues` - unlike `convertEmptyValues` which uses the DynamoDB `Null` type, this option will remove empty values entirely. This option has lower precedence than `convertEmptyValues`; if both are specified, this one is ignored.
   * `maxRetries` - Maximum number of retries. **(COMING SOON)**
   * `retryBackoff` - same as the `retryDelayOptions.customBackoff` that the DocumentClient's `service` option takes: a function with the signature `(retryCount) => msToWait`. **(COMING SOON)**
+  * `agent` - supply your own https Agent.
+  * `useKeepAlive` - when `true` this is a shorthand for using an https Agent with `keepAlive` turned on. This offers a significant performance benefit, but can cause issues in Lambdas if `context.callbackWaitsForEmptyEventLoop = false` is not set.
 
 # Automatically Paging Requests
 
