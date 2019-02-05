@@ -34,7 +34,7 @@
     "request-micro": "^1.2.2"
   },
   "devDependencies": {
-    "aws-sdk": "^2.82.0",
+    "aws-sdk": "^2.396.0",
     "babel-eslint": "^8.2.3",
     "blue-tape": "^1.0.0",
     "chokidar-cli": "^1.2.0",

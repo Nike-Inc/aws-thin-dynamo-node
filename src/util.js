@@ -114,7 +114,13 @@ function convertParamsToDynamo (context, params, keysToConvert) {
   params = Object.assign({}, params)
   keysToConvert.filter(k => params[k] !== undefined).forEach(key => {
     context.logger.debug('converting', key, params[key], context.converterOptions)
-    params[key] = converter.toDynamo(params[key], context.converterOptions)
+    if (key === 'KeyConditions') {
+
+    }
+    // KeyConditions has unique conversion handling
+    params[key] = key === 'KeyConditions'
+      ? convertKeyConditions(context, params[key])
+      : converter.toDynamo(params[key], context.converterOptions)
     context.logger.debug('conversion complete', key, params[key])
   })
   if (params.Expected) {
@@ -124,4 +130,15 @@ function convertParamsToDynamo (context, params, keysToConvert) {
     })
   }
   return params
+}
+
+function convertKeyConditions (context, conditions) {
+  conditions = Object.assign({}, conditions)
+  Object.keys(conditions).forEach(key => {
+    conditions[key] = Object.assign({}, conditions[key], {
+      AttributeValueList: conditions[key].AttributeValueList &&
+        conditions[key].AttributeValueList.map(val => converter.value.toDynamo(val, context.converterOptions))
+    })
+  })
+  return conditions
 }
