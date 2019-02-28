@@ -5,6 +5,7 @@ const stream = require('stream')
 module.exports = class Set {
   constructor (values, options) {
     this.values = values
+    this.wrapperName = 'Set'
     this.type = detectType(values)
   }
 }

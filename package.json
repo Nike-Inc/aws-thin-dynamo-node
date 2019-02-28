@@ -26,10 +26,10 @@
     "test:watch": "npm run test:unit -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.spec.js' --polling -c \"./node_modules/.bin/blue-tape test/**/**.spec.js | node_modules/.bin/tap-spec\"",
     "test:int": "blue-tape test/**/**.int.js | tap-spec",
     "test:int:coverage": "nyc --check-coverage --lines 80 npm run test:int",
-    "test:int:watch": "npm run test:int -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.int.js' --polling -c \"./node_modules/.bin/blue-tape test/**/**.int.js | node_modules/.bin/tap-spec\"",
-    "test:size": "webpack --config test/sizing.manual.js && echo $(du -h \"test/build/dynamo.js\" | awk '{print $1}')"
+    "test:int:watch": "npm run test:int -s & ./node_modules/.bin/chokidar 'src/**/*.js' 'test/**/*.int.js' --polling -c \"./node_modules/.bin/blue-tape test/**/**.int.js | node_modules/.bin/tap-spec\""
   },
   "dependencies": {
+    "agentkeepalive": "^4.0.2",
     "aws4": "^1.6.0",
     "request-micro": "^1.2.2"
   },

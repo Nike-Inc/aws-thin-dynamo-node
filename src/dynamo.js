@@ -9,7 +9,6 @@ module.exports = makeClient
 function makeClient (options) {
   let context = Object.assign({}, options)
   assert(context.region, 'Region is a required option for Dynamo clients')
-
   context.logger = util.logWrapper(context.logger)
   context.convert = util.convertParamsToDynamo.bind(null, context)
   context.converterOptions = { removeEmptyValues: context.removeEmptyValues, convertEmptyValues: context.convertEmptyValues }
@@ -22,10 +21,11 @@ function makeClient (options) {
   }
 
   if (context.useKeepAlive) {
-    let https = require('https')
-    context.agent = new https.Agent({
-      keepAlive: true
-    })
+    const Agent = context.endpoint && context.endpoint.includes('http:')
+      ? require('agentkeepalive')
+      : require('agentkeepalive').HttpsAgent
+
+    context.agent = new Agent()
   }
 
   return {
