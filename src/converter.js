@@ -39,10 +39,12 @@ function mapAttrToDb (val, key, options) {
     if (val.type === 'String') return {SS: val.values}
     if (val.type === 'Number') return {NS: val.values.map(numToStr)}
     if (val.type === 'Binary') {
-      return {BS: val.values.map(b => {
-        b.toJSON = base64BufferJson
-        return b
-      })}
+      return {
+        BS: val.values.map(b => {
+          b.toJSON = base64BufferJson
+          return b
+        })
+      }
     }
   }
   if (Array.isArray(val)) {

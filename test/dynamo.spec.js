@@ -83,13 +83,13 @@ let mock = (t, input, output, responseCode = 200) => {
 const simpleItem = { name: '1', age: 20, addresses: [1.2, 2.2, 3.3] }
 const complexItem = { name: '1', sub: '2', limits: { count: 2, types: [ {filter: '1'}, { filter: '2' } ] }, addresses: [1.2, 2.2, 3.3] }
 
-test.only('query', spec => {
+test('query', spec => {
   let querySimple = {Count: 1, Items: [awsConverter.marshall(simpleItem), awsConverter.marshall(simpleItem)], ScannedCount: 1}
   let queryComplex = {Count: 1, Items: [{suspendedIn: {L: []}, client: {M: {claimGroups: {L: [{M: {name: {S: 'Application.US.FTE.Users'}, devId: {S: '00g82uls25fzne7Zb0h7'}, prodId: {S: '00g8buyb05cuJ08EG0h7'}}}]}, applicationType: {S: 'browser'}, grantTypes: {L: [{S: 'implicit'}]}, clientId: {S: 'nike.okta.groups'}, name: {S: 'group test'}, groups: {L: [{S: 'everyone'}]}, redirectUris: {M: {dev: {L: [{S: 'http://127.0.0.1:3000'}, {S: 'http://localhost:3000'}]}, prod: {L: [{S: 'http://localhost:3000'}]}}}}}, createdOn: {N: '1498767340882'}, ownerType: {S: 'user'}, clients: {M: {dev: {M: {okta: {M: {app_id: {S: '0oab0asnd0nYlRECL0h7'}, application_type: {S: 'browser'}, client_id: {S: 'nike.okta.groups'}}}, ping: {M: {clientId: {S: 'nike.okta.groups'}}}}}, prod: {M: {okta: {M: {app_id: {S: '0oab0asnkrn6Gu7uQ0h7'}, application_type: {S: 'browser'}, client_id: {S: 'nike.okta.groups'}}}, ping: {M: {clientId: {S: 'nike.okta.groups'}}}}}}}, auditLog: {L: [{M: {message: {S: 'Approved app for dev'}, createdOn: {N: '1498768644240'}, username: {S: 'a.techrev.jenkins'}}}, {M: {message: {S: 'Requested production access'}, createdOn: {N: '1498769125006'}, username: {S: 'tkye'}}}, {M: {message: {S: 'Approved app for prod'}, createdOn: {N: '1498769133519'}, username: {S: 'a.techrev.jenkins'}}}]}, name: {S: 'group test'}, approvers: {L: []}, clientId: {S: 'nike.okta.groups'}, ownerId: {S: 'tkye'}}], ScannedCount: 1}
   let queryParams = p({ KeyConditionExpression: 'name = :name', ExpressionAttributeValues: { ':name': 1 } })
   let queryParamsComparison = {
     TableName: 'TableA',
-    IndexName: 'Scan',   
+    IndexName: 'Scan',
     KeyConditions: {
       'scanId': {
         ComparisonOperator: 'EQ',

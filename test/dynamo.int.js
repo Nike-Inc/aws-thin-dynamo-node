@@ -137,7 +137,7 @@ test('client should be able to batchGet and batchWrite', t => {
   })
 })
 
-test.only('client should be able to scanAll', t => {
+test('client should be able to scanAll', t => {
   let client = dynamo({ logger: testLogger, region: 'us-west-2' })
 
   return co(function * () {

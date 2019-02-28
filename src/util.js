@@ -93,6 +93,9 @@ function signedRequest (context, params) {
       region: context.region,
       protocol: endpoint ? endpoint.protocol : 'https:'
     }
+    if (context.useKeepAlive) {
+      defaultParams.headers['connection'] = 'keep-alive'
+    }
     context.logger.debug('sending request', params, defaultParams)
     let signed = aws4.sign(Object.assign(defaultParams, params), context.credentials)
     return request(signed).then(result => {
