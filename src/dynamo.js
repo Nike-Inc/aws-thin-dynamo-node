@@ -26,7 +26,8 @@ function makeClient (options) {
       : require('agentkeepalive').HttpsAgent
 
     context.agent = new Agent({
-      maxSockets: 50
+      maxSockets: 50,
+      maxFreeSockets: 10
     })
   }
 
