@@ -47,7 +47,7 @@ const options = { convertEmptyValues: true }
 //   log('set', result)
 // })
 
-test.only('converter', spec => {
+test('converter', spec => {
   spec.test('toDynamo should match aws for non-empty, non-binary types', t => {
     let result = dynamoConverter.toDynamo(jsObject, options)
     t.deepEqual(result, dynamoObject, 'should match aws marshall exactly')
@@ -73,7 +73,7 @@ test.only('converter', spec => {
 
   spec.test('toDynamo should remove functions', t => {
     t.plan(1)
-    let result = dynamoConverter.toDynamo({ func: () => {}, name: 'tim' })
+    let result = dynamoConverter.toDynamo({ func: () => { }, name: 'tim' })
     let match = awsConverter.marshall({ name: 'tim' })
     t.deepEqual(result, match, 'matches aws object')
     t.end()

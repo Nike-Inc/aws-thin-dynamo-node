@@ -41,6 +41,7 @@ function makeClient (options) {
     delete: deleteItem.bind(null, context),
     batchGet: batchGet.bind(null, context),
     batchWrite: batchWrite.bind(null, context),
+    queryAll: queryAll.bind(null, context),
     scanAll: scanAll.bind(null, context),
     batchWriteAll: batchWriteAll.bind(null, context),
     batchGetAll: batchGetAll.bind(null, context)
@@ -123,32 +124,70 @@ They are not a part of the AWS DocumentClient, but "page all" is a generally
 useful feature that is likely to be written by multiple consumers
 */
 
-function scanAll (context, params) {
-  params = Object.assign({}, params)
+async function queryAll (context, params) {
+  params = { ...params }
   let result
-  let lastKey
+  let queryLimit = params.QueryLimit
+  let itemLimit = params.ItemLimit
+  delete params.QueryLimit
+  delete params.ItemLimit
+
+  let response = {}
+  let workRemaining
+  do {
+    response = await query(context, {
+      ...params,
+      ExclusiveStartKey: response.LastEvaluatedKey
+    })
+    // First run
+    if (result === undefined) {
+      result = response
+    } else {
+      result.Count += response.Count
+      result.ScannedCount += response.ScannedCount
+      result.Items = result.Items.concat(response.Items)
+      result.LastEvaluatedKey = response.LastEvaluatedKey
+    }
+    workRemaining =
+      response.LastEvaluatedKey &&
+      (queryLimit === undefined || result.ScannedCount < queryLimit) &&
+      (itemLimit === undefined || result.Count < itemLimit)
+  } while (workRemaining)
+
+  return result
+}
+
+async function scanAll (context, params) {
+  params = { ...params }
+  let result
   let scanLimit = params.ScanLimit
   let itemLimit = params.ItemLimit
   delete params.ScanLimit
   delete params.ItemLimit
-  let run = () => scan(context, Object.assign({}, params, { ExclusiveStartKey: lastKey })).then(response => {
-    if (result === undefined) result = response
-    else {
+
+  let response = {}
+  let workRemaining
+  do {
+    response = await scan(context, {
+      ...params,
+      ExclusiveStartKey: response.LastEvaluatedKey
+    })
+    // First run
+    if (result === undefined) {
+      result = response
+    } else {
       result.Count += response.Count
       result.ScannedCount += response.ScannedCount
       result.Items = result.Items.concat(response.Items)
+      result.LastEvaluatedKey = response.LastEvaluatedKey
     }
-    if (response.LastEvaluatedKey &&
+    workRemaining =
+      response.LastEvaluatedKey &&
       (scanLimit === undefined || result.ScannedCount < scanLimit) &&
-      (itemLimit === undefined || result.Count < itemLimit)) {
-      lastKey = response.LastEvaluatedKey
-      return run()
-    }
-    delete result.LastEvaluatedKey
-    return result
-  })
+      (itemLimit === undefined || result.Count < itemLimit)
+  } while (workRemaining)
 
-  return Promise.resolve(run())
+  return result
 }
 
 function batchWriteAll (context, params) {

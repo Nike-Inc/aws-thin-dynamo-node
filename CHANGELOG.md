@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/)
 
-## [0.13.0] - 2010-03-04
+## [0.14.0] - 2020-03-27
+## Added
+`queryAll`
+## Fixed
+`scanAll` handling of `ScanLimit`
+
+## [0.13.0] - 2018-03-04
 ## Changed
 `useKeepAlive` handling
 
